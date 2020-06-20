@@ -15,7 +15,8 @@ class Turnstile(Producer):
     key_schema = avro.load(f"{Path(__file__).parents[0]}/schemas/turnstile_key.json")
 
     #
-
+    # TODO: Define this value schema in `schemas/turnstile_value.json, then uncomment the below
+    #
     value_schema = avro.load(
         f"{Path(__file__).parents[0]}/schemas/turnstile_value.json"
     )
@@ -30,9 +31,12 @@ class Turnstile(Producer):
             .replace("'", "")
         )
         #
-
         #
-        topic_name = f"{station_name}"
+        # TODO: Complete the below by deciding on a topic name, number of partitions, and number of
+        # replicas
+        #
+        #
+        topic_name = "cda.turnstile"
         super().__init__(
             topic_name, # TODO: Come up with a better topic name
             key_schema=Turnstile.key_schema,
@@ -46,15 +50,21 @@ class Turnstile(Producer):
     def run(self, timestamp, time_step):
         """Simulates riders entering through the turnstile."""
         num_entries = self.turnstile_hardware.get_entries(timestamp, time_step)
+        logger.debug(
+            "%s riders have entered station %s at %s",
+            num_entries,
+            self.station.name,
+            timestamp.isoformat(),
+        )
         
         for _ in range (num_entries):
             try:
-                self.produce.producer(
+                self.producer.produce(
                     topic = self.topic_name,
                     key={"timestamp": self.time_millis()},
                     value = {
                         "station_id": self.station.station_id,
-                        "station_name": self.station_name,
+                        "station_name": self.station.name,
                         "line": self.station.color.name
                     },
                 )
@@ -63,5 +73,10 @@ class Turnstile(Producer):
                 raise e
         
         logger.info("turnstile kafka integration Succesful - skipping")
-
+        #
+        #
+        # TODO: Complete this function by emitting a message to the turnstile topic for the number
+        # of entries that were calculated
+        #
+        #
     logger.info("Produced turnstile msessage successfully!")

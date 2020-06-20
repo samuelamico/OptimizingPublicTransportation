@@ -21,18 +21,23 @@ KSQL_URL = "http://localhost:8088"
 #       Make sure to cast the COUNT of station id to `count`
 #       Make sure to set the value format to JSON
 
+
 KSQL_STATEMENT = """
 CREATE TABLE turnstile (
-    ???
+    station_id INT,
+    station_name VARCHAR,
+    line VARCHAR
 ) WITH (
-    ???
+    kafka_topic = 'cda.turnstile',
+    value_format = 'avro',
+    key = 'station_id'
 );
-
 CREATE TABLE turnstile_summary
-WITH (???) AS
-    ???
+WITH (value_format = 'json') AS
+    SELECT station_id, COUNT(station_id) AS count
+    FROM turnstile
+    GROUP BY station_id;
 """
-
 
 def execute_statement():
     """Executes the KSQL statement against the KSQL API"""
@@ -40,10 +45,9 @@ def execute_statement():
         return
 
     logging.debug("executing ksql statement...")
-
     resp = requests.post(
         f"{KSQL_URL}/ksql",
-        headers={"Content-Type": "application/vnd.ksql.v1+json"},
+        headers={"Content-Type": "application/vnd.ksql.v1+json; charset=utf-8"},
         data=json.dumps(
             {
                 "ksql": KSQL_STATEMENT,

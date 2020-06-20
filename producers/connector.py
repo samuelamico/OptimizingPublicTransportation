@@ -17,22 +17,18 @@ def configure_connector():
 
     resp = requests.get(f"{KAFKA_CONNECT_URL}/{CONNECTOR_NAME}")
     if resp.status_code == 200:
+        print("connector created successfully.")
+        print("Use kafka-console-consumer and kafka-topics to see data!")
         logging.debug("connector already created skipping recreation")
         return
 
-    # TODO: Complete the Kafka Connect Config below.
-    # Directions: Use the JDBC Source Connector to connect to Postgres. Load the `stations` table
-    # using incrementing mode, with `stop_id` as the incrementing column name.
-    # Make sure to think about what an appropriate topic prefix would be, and how frequently Kafka
-    # Connect should run this connector (hint: not very often!)
-        #return
 
     # TODO: Complete the Kafka Connect Config below.
     # Directions: Use the JDBC Source Connector to connect to Postgres. Load the `stations` table
     # using incrementing mode, with `stop_id` as the incrementing column name.
     # Make sure to think about what an appropriate topic prefix would be, and how frequently Kafka
     # Connect should run this connector (hint: not very often!)
-    logger.info("connector code not completed skipping connector creation")
+    #logger.info("connector code not completed skipping connector creation")
     resp = requests.post(
         KAFKA_CONNECT_URL,
         headers={"Content-Type": "application/json"},
@@ -58,15 +54,19 @@ def configure_connector():
     #            # TODO
                 "incrementing.column.name": "stop_id",
     #            # TODO
-                "topic.prefix": "connect-station",
+                "topic.prefix": "cda",
     #            # TODO
-                "poll.interval.ms": "300000",
+                "poll.interval.ms": "1000000",
             }
         }),
     )
 
     ## Ensure a healthy response was given
-    resp.raise_for_status()
+    try:
+        resp.raise_for_status()
+    except:
+        print(f"failed creating connector: {json.dumps(resp.json(), indent=2)}")
+
     logging.debug("connector created successfully")
 
 
